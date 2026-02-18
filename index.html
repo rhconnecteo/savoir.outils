@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Outils à créer - IT</title>
+  <link rel="icon" type="image/png" href="mathematiques.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <header class="header">
+    <h1>📋 Outils à créer - Suivi IT</h1>
+  </header>
+
+  <section class="card">
+    <h2>Liste des outils par collaborateur</h2>
+
+    <!-- Filtres -->
+    <div class="filters-container">
+      <div class="filter-group">
+        <label for="filterMatricule">Filtrer par Matricule</label>
+        <select id="filterMatricule" onchange="applyFilters()">
+          <option value="">-- Tous les matricules --</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filterFonction">Filtrer par Fonction</label>
+        <select id="filterFonction" onchange="applyFilters()">
+          <option value="">-- Toutes les fonctions --</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filterRattachement">Filtrer par Rattachement</label>
+        <select id="filterRattachement" onchange="applyFilters()">
+          <option value="">-- Tous les rattachements --</option>
+        </select>
+      </div>
+
+      <button class="btn btn-secondary" onclick="resetFilters()">🔄 Réinitialiser</button>
+    </div>
+
+    <!-- Tableau -->
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Matricule</th>
+            <th>Nom</th>
+            <th>Fonction</th>
+            <th>Rattachement</th>
+            <th>Login</th>
+            <th>Outil</th>
+            <th>Statut</th>
+            <th>Date Début</th>
+            <th>Date Fin</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+      </table>
+    </div>
+
+    <div id="emptyMessage" style="text-align: center; padding: 20px; color: #999; display: none;">
+      Aucune donnée à afficher
+    </div>
+
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
