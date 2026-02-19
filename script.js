@@ -1,7 +1,7 @@
 // ===============================
 // CONFIG API
 // ===============================
-const API_URL = "https://script.google.com/macros/s/AKfycbxSwajBZ6VkFFdMIZsdZZf32JhBFH9WEYGi2aKtf_bIoEsCkeFiPK1rzZC3eekXDTFm_Q/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycby9F0yKZquOMRFi0I4pucZtSq7eMjbyqNUUd-nVh6p3PeLhd7YutqiAyborkcMz3MAU2w/exec";
 
 let allData = [];
 let filteredData = [];
