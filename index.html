@@ -9,9 +9,33 @@
 </head>
 
 <body>
+  <!-- LOGIN MODAL -->
+  <div id="loginModal" class="login-modal">
+    <div class="login-container">
+      <div class="login-box">
+        <h2>Connexion</h2>
+        <form id="loginForm" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label for="username">Identifiant:</label>
+            <input type="text" id="username" required />
+          </div>
+          <div class="form-group">
+            <label for="password">Mot de passe:</label>
+            <input type="password" id="password" required />
+          </div>
+          <div id="loginError" class="login-error"></div>
+          <button type="submit" class="btn btn-primary">Se connecter</button>
+        </form>
+      </div>
+    </div>
+  </div>
 
-  <header class="header">
-    <h1>📋 Outils à créer - Suivi IT</h1>
+  <!-- MAIN CONTENT (Hidden until login) -->
+  <div id="mainContent" class="main-content" style="display: none;">
+      <div class="header-content">
+      <h1>📋 Outils à créer - Suivi IT</h1>
+      <button class="btn btn-logout" onclick="handleLogout()">Déconnexion</button>
+    </div>
   </header>
 
   <section class="card">
@@ -69,6 +93,7 @@
     </div>
 
   </section>
+  </div>
 
   <script src="script.js"></script>
 </body>
