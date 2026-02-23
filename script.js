@@ -1,4 +1,65 @@
 // ===============================
+// CONFIG LOGIN
+// ===============================
+const CORRECT_USERNAME = "admin";
+const CORRECT_PASSWORD = "outil";
+
+// ===============================
+// VÉRIFIER L'AUTHENTIFICATION AU CHARGEMENT
+// ===============================
+function checkAuthentication() {
+  const isAuthenticated = sessionStorage.getItem("isAuthenticated") === "true";
+  const loginModal = document.getElementById("loginModal");
+  const mainContent = document.getElementById("mainContent");
+  
+  if (isAuthenticated) {
+    loginModal.style.display = "none";
+    mainContent.style.display = "block";
+    document.body.classList.remove("login-active");
+  } else {
+    loginModal.style.display = "flex";
+    mainContent.style.display = "none";
+    document.body.classList.add("login-active");
+  }
+}
+
+// ===============================
+// GÉRER LA CONNEXION
+// ===============================
+function handleLogin(event) {
+  event.preventDefault();
+  
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+  const errorDiv = document.getElementById("loginError");
+  
+  if (username === CORRECT_USERNAME && password === CORRECT_PASSWORD) {
+    sessionStorage.setItem("isAuthenticated", "true");
+    errorDiv.textContent = "";
+    document.getElementById("loginModal").style.display = "none";
+    document.getElementById("mainContent").style.display = "block";
+    document.body.classList.remove("login-active");
+    document.getElementById("loginForm").reset();
+    loadData();
+  } else {
+    errorDiv.textContent = "Identifiant ou mot de passe incorrect";
+    document.getElementById("password").value = "";
+  }
+}
+
+// ===============================
+// GÉRER LA DÉCONNEXION
+// ===============================
+function handleLogout() {
+  sessionStorage.setItem("isAuthenticated", "false");
+  document.getElementById("loginModal").style.display = "flex";
+  document.getElementById("mainContent").style.display = "none";
+  document.body.classList.add("login-active");
+  document.getElementById("loginForm").reset();
+  document.getElementById("loginError").textContent = "";
+}
+
+// ===============================
 // CONFIG API
 // ===============================
 const API_URL = "https://script.google.com/macros/s/AKfycby9F0yKZquOMRFi0I4pucZtSq7eMjbyqNUUd-nVh6p3PeLhd7YutqiAyborkcMz3MAU2w/exec";
@@ -18,6 +79,13 @@ function normalizeOutil(outil) {
     dateFin: outil.dateFin || outil.dateFin_old || ""
   };
 }
+
+// ===============================
+// INITIALISER AU CHARGEMENT DE LA PAGE
+// ===============================
+window.addEventListener("DOMContentLoaded", () => {
+  checkAuthentication();
+});
 
 // Elements
 const tableBody = document.getElementById("tableBody");
