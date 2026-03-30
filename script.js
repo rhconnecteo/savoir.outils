@@ -90,9 +90,136 @@ window.addEventListener("DOMContentLoaded", () => {
 // Elements
 const tableBody = document.getElementById("tableBody");
 const emptyMessage = document.getElementById("emptyMessage");
-const filterMatricule = document.getElementById("filterMatricule");
-const filterFonction = document.getElementById("filterFonction");
-const filterRattachement = document.getElementById("filterRattachement");
+const matriculeDropdown = document.getElementById("matriculeDropdown");
+const fonctionDropdown = document.getElementById("fonctionDropdown");
+const rattachementDropdown = document.getElementById("rattachementDropdown");
+
+// ===============================
+// GET FILTER VALUE (from searchable dropdown)
+// ===============================
+function getFilterValue(dropdownId) {
+  const dropdown = document.getElementById(dropdownId);
+  if (!dropdown) return "";
+  const selected = dropdown.querySelector(".dropdown-option.selected");
+  return selected ? selected.dataset.value : "";
+}
+
+// ===============================
+// SET FILTER VALUE (in searchable dropdown)
+// ===============================
+function setFilterValue(dropdownId, value) {
+  const dropdown = document.getElementById(dropdownId);
+  if (!dropdown) return;
+  
+  const input = dropdown.querySelector(".filter-search-input");
+  const options = dropdown.querySelectorAll(".dropdown-option");
+  
+  options.forEach(opt => opt.classList.remove("selected"));
+  
+  let selectedOption = null;
+  options.forEach(opt => {
+    if (opt.dataset.value === value) {
+      opt.classList.add("selected");
+      selectedOption = opt;
+    }
+  });
+  
+  if (selectedOption) {
+    input.value = selectedOption.textContent.trim();
+  } else {
+    input.value = "";
+  }
+}
+
+// ===============================
+// POPULATE DROPDOWN OPTIONS
+// ===============================
+function populateDropdownOptions(dropdownId, options) {
+  const dropdown = document.getElementById(dropdownId);
+  if (!dropdown) return;
+  
+  const optionsContainer = dropdown.querySelector(".dropdown-options");
+  
+  // Clear all options except the first "all" option
+  const firstOption = optionsContainer.querySelector(".dropdown-option");
+  optionsContainer.innerHTML = "";
+  optionsContainer.appendChild(firstOption);
+  
+  // Add new options
+  options.forEach(optValue => {
+    const optElement = document.createElement("div");
+    optElement.className = "dropdown-option";
+    optElement.dataset.value = optValue;
+    optElement.textContent = optValue;
+    optElement.onclick = function(e) {
+      e.stopPropagation();
+      selectDropdownOption(dropdownId, optValue);
+    };
+    optionsContainer.appendChild(optElement);
+  });
+}
+
+// ===============================
+// SELECT DROPDOWN OPTION
+// ===============================
+function selectDropdownOption(dropdownId, value) {
+  setFilterValue(dropdownId, value);
+  const dropdown = document.getElementById(dropdownId);
+  const optionsContainer = dropdown.querySelector(".dropdown-options");
+  optionsContainer.classList.remove("show");
+  applyFilters();
+}
+
+// ===============================
+// FILTER DROPDOWN OPTIONS (search functionality)
+// ===============================
+function filterDropdownOptions(input) {
+  const dropdownId = input.closest(".searchable-dropdown").id;
+  const dropdown = document.getElementById(dropdownId);
+  const optionsContainer = dropdown.querySelector(".dropdown-options");
+  const options = optionsContainer.querySelectorAll(".dropdown-option");
+  
+  const searchTerm = input.value.toLowerCase();
+  
+  // Show/hide options based on search
+  options.forEach(option => {
+    const text = option.textContent.toLowerCase();
+    if (text.includes(searchTerm)) {
+      option.classList.remove("hidden");
+    } else {
+      option.classList.add("hidden");
+    }
+  });
+  
+  // Show the dropdown when typing
+  if (searchTerm.length > 0 || input.value.length === 0) {
+    optionsContainer.classList.add("show");
+  }
+}
+
+// ===============================
+// CLOSE DROPDOWNS WHEN CLICKING OUTSIDE
+// ===============================
+document.addEventListener("click", function(event) {
+  const searchableDropdowns = document.querySelectorAll(".searchable-dropdown");
+  searchableDropdowns.forEach(dropdown => {
+    if (!dropdown.contains(event.target)) {
+      const optionsContainer = dropdown.querySelector(".dropdown-options");
+      optionsContainer.classList.remove("show");
+    }
+  });
+});
+
+// ===============================
+// OPEN DROPDOWNS WHEN CLICKING ON INPUT
+// ===============================
+document.addEventListener("click", function(event) {
+  if (event.target.classList.contains("filter-search-input")) {
+    const dropdown = event.target.closest(".searchable-dropdown");
+    const optionsContainer = dropdown.querySelector(".dropdown-options");
+    optionsContainer.classList.add("show");
+  }
+});
 
 // ===============================
 // CHARGER LES DONNÉES DEPUIS L'API
@@ -128,46 +255,43 @@ async function loadData() {
 // ===============================
 function populateFilters() {
   // Extraire les matricules uniques
-  const matricules = [...new Set(allData.map(u => u.matricule).filter(m => m))];
-  matricules.forEach(m => {
-    const opt = document.createElement("option");
-    opt.value = m;
-    opt.textContent = m;
-    filterMatricule.appendChild(opt);
-  });
+  const matricules = [...new Set(allData.map(u => u.matricule).filter(m => m))].sort();
+  populateDropdownOptions('matriculeDropdown', matricules);
 
   // Extraire les fonctions uniques
-  const fonctions = [...new Set(allData.map(u => u.fonction).filter(f => f))];
-  fonctions.forEach(f => {
-    const opt = document.createElement("option");
-    opt.value = f;
-    opt.textContent = f;
-    filterFonction.appendChild(opt);
-  });
+  const fonctions = [...new Set(allData.map(u => u.fonction).filter(f => f))].sort();
+  populateDropdownOptions('fonctionDropdown', fonctions);
 
-  // Extraire les rattachements uniques
-  const rattachements = [...new Set(allData.map(u => u.rattachement).filter(r => r))];
-  rattachements.forEach(r => {
-    const opt = document.createElement("option");
-    opt.value = r;
-    opt.textContent = r;
-    filterRattachement.appendChild(opt);
-  });
+  // Extraire les rattachements uniques - EXCLUSIVEMENT Contact Center MVOLA, Contact Center YAS, et Contact Center OPEN FIELD
+  const allRattachements = [...new Set(allData.map(u => u.rattachement).filter(r => r))];
+  const filteredRattachements = allRattachements.filter(r => {
+    const normalizedR = r.toLowerCase().trim();
+    return normalizedR === "contact center mvola" || 
+           normalizedR === "contact center yas" || 
+           normalizedR === "contact center open field";
+  }).sort();
+  
+  populateDropdownOptions('rattachementDropdown', filteredRattachements);
 }
 
 // ===============================
 // APPLIQUER LES FILTRES
 // ===============================
 function applyFilters() {
-  const matricule = filterMatricule.value;
-  const fonction = filterFonction.value;
-  const rattachement = filterRattachement.value;
+  const matricule = getFilterValue('matriculeDropdown');
+  const fonction = getFilterValue('fonctionDropdown');
+  const rattachement = getFilterValue('rattachementDropdown');
 
   filteredData = allData.filter(u => {
     const matchMatricule = !matricule || u.matricule === matricule;
     const matchFonction = !fonction || u.fonction === fonction;
     const matchRattachement = !rattachement || u.rattachement === rattachement;
-    return matchMatricule && matchFonction && matchRattachement;
+    
+    // Toujours vérifier que le rattachement est l'un des trois autorisés
+    const allowedRattachements = ["contact center mvola", "contact center yas", "contact center open field"];
+    const isAllowedRattachement = u.rattachement && allowedRattachements.includes(u.rattachement.toLowerCase().trim());
+    
+    return matchMatricule && matchFonction && matchRattachement && isAllowedRattachement;
   });
 
   renderTable(filteredData);
@@ -177,10 +301,41 @@ function applyFilters() {
 // RÉINITIALISER LES FILTRES
 // ===============================
 function resetFilters() {
-  filterMatricule.value = "";
-  filterFonction.value = "";
-  filterRattachement.value = "";
+  setFilterValue('matriculeDropdown', '');
+  setFilterValue('fonctionDropdown', '');
+  setFilterValue('rattachementDropdown', '');
+  
+  // Clear all search inputs
+  document.querySelectorAll(".filter-search-input").forEach(input => {
+    input.value = '';
+  });
+  
+  // Hide all dropdowns
+  document.querySelectorAll(".dropdown-options").forEach(container => {
+    container.classList.remove("show");
+  });
+  
   renderTable(allData);
+}
+
+// ===============================
+// DÉTERMINER LE STATUT DES OUTILS
+// ===============================
+function getToolsStatus(user) {
+  if (!user.outils || user.outils.length === 0) {
+    return { count: 0, status: "empty", label: "0 outil" }; // ROUGE
+  }
+
+  const allTerminated = user.outils.every(o => {
+    const normalized = normalizeOutil(o);
+    return normalized.statut === "Terminé";
+  });
+
+  if (allTerminated) {
+    return { count: user.outils.length, status: "completed", label: `${user.outils.length} terminé(s)` }; // VERT
+  } else {
+    return { count: user.outils.length, status: "inProgress", label: `${user.outils.length} en cours` }; // ORANGE
+  }
 }
 
 // ===============================
@@ -189,71 +344,125 @@ function resetFilters() {
 function renderTable(data) {
   tableBody.innerHTML = "";
 
-  // Créer une liste d'outils (déploiement)
-  const rows = [];
-
+  // Grouper les utilisateurs par matricule (enlever les doublons)
+  const usersByMatricule = {};
+  
   data.forEach(user => {
-    if (!user.outils || user.outils.length === 0) {
-      // Afficher une ligne vide si pas d'outils
-      rows.push({
-        matricule: user.matricule,
-        nom: user.nom,
-        fonction: user.fonction,
-        rattachement: user.rattachement,
-        login: user.login,
-        outil: "---",
-        statut: "---",
-        dateDebut: "---",
-        dateFin: "---"
-      });
-    } else {
-      // Créer une ligne par outil
-      user.outils.forEach(outil => {
-        // 🔥 Normaliser l'outil pour gérer les deux structures
-        const outiLNormalisé = normalizeOutil(outil);
-        
-        rows.push({
-          matricule: user.matricule,
-          nom: user.nom,
-          fonction: user.fonction,
-          rattachement: user.rattachement,
-          login: user.login,
-          outil: outiLNormalisé.outil || "---",
-          statut: outiLNormalisé.statut || "---",
-          dateDebut: outiLNormalisé.dateDebut || "---",
-          dateFin: outiLNormalisé.dateFin || "---"
-        });
-      });
+    if (!usersByMatricule[user.matricule]) {
+      usersByMatricule[user.matricule] = user;
     }
   });
 
-  // Afficher les lignes
-  if (rows.length === 0) {
+  // Convertir en array et filtrer les rattachements autorisés
+  const allowedRattachements = ["contact center mvola", "contact center yas", "contact center open field"];
+  const uniqueUsers = Object.values(usersByMatricule).filter(user => 
+    user.rattachement && allowedRattachements.includes(user.rattachement.toLowerCase().trim())
+  );
+
+  if (uniqueUsers.length === 0) {
     emptyMessage.style.display = "block";
     tableBody.innerHTML = "";
   } else {
     emptyMessage.style.display = "none";
-    rows.forEach(row => {
+    uniqueUsers.forEach(user => {
+      const toolsInfo = getToolsStatus(user);
+      let badgeClass = "status-info";
+      
+      if (toolsInfo.status === "empty") {
+        badgeClass = "status-danger"; // ROUGE
+      } else if (toolsInfo.status === "completed") {
+        badgeClass = "status-success"; // VERT
+      } else if (toolsInfo.status === "inProgress") {
+        badgeClass = "status-warning"; // ORANGE
+      }
+      
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td><strong>${row.matricule}</strong></td>
-        <td>${row.nom}</td>
-        <td>${row.fonction}</td>
-        <td>${row.rattachement}</td>
-        <td>${row.login}</td>
-        <td>${row.outil}</td>
-        <td>
-          <span class="badge ${row.statut === 'Terminé' ? 'status-success' : 'status-info'}">
-            ${row.statut}
-          </span>
+        <td><strong>${user.matricule}</strong></td>
+        <td>${user.nom}</td>
+        <td>${user.fonction}</td>
+        <td>${user.rattachement}</td>
+        <td>${user.login}</td>
+        <td style="text-align: center;">
+          <span class="badge ${badgeClass}">${toolsInfo.label}</span>
         </td>
-        <td>${row.dateDebut}</td>
-        <td>${row.dateFin}</td>
+        <td style="text-align: center;">
+          <button class="eye-icon-btn" onclick="openDetails('${user.matricule}')" title="Voir les détails">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </button>
+        </td>
       `;
       tableBody.appendChild(tr);
     });
   }
 }
+
+// ===============================
+// OUVRIR LES DÉTAILS
+// ===============================
+function openDetails(matricule) {
+  // Trouver l'utilisateur
+  const user = allData.find(u => u.matricule === matricule);
+  
+  if (!user) return;
+
+  // Remplir les détails
+  document.getElementById("detailMatricule").textContent = user.matricule || "---";
+  document.getElementById("detailNom").textContent = user.nom || "---";
+  document.getElementById("detailFonction").textContent = user.fonction || "---";
+  document.getElementById("detailRattachement").textContent = user.rattachement || "---";
+  document.getElementById("detailLogin").textContent = user.login || "---";
+
+  // Remplir le tableau des outils
+  const toolsTableBody = document.getElementById("toolsTableBody");
+  const emptyTools = document.getElementById("emptyTools");
+  
+  toolsTableBody.innerHTML = "";
+
+  if (!user.outils || user.outils.length === 0) {
+    emptyTools.style.display = "block";
+  } else {
+    emptyTools.style.display = "none";
+    user.outils.forEach(outil => {
+      const outiLNormalisé = normalizeOutil(outil);
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${outiLNormalisé.outil || "---"}</td>
+        <td>
+          <span class="badge ${outiLNormalisé.statut === 'Terminé' ? 'status-success' : 'status-info'}">
+            ${outiLNormalisé.statut || "---"}
+          </span>
+        </td>
+        <td>${outiLNormalisé.dateDebut || "---"}</td>
+        <td>${outiLNormalisé.dateFin || "---"}</td>
+      `;
+      toolsTableBody.appendChild(tr);
+    });
+  }
+
+  // Afficher la modal
+  const modal = document.getElementById("detailsModal");
+  modal.classList.add("show");
+}
+
+// ===============================
+// FERMER LA MODAL
+// ===============================
+function closeModal() {
+  const modal = document.getElementById("detailsModal");
+  modal.classList.remove("show");
+}
+
+// Fermer la modal en cliquant en dehors
+window.addEventListener("click", function(event) {
+  const modal = document.getElementById("detailsModal");
+  if (event.target === modal) {
+    closeModal();
+  }
+});
 
 // ===============================
 // AFFICHER ERREUR

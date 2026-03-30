@@ -43,25 +43,37 @@
 
     <!-- Filtres -->
     <div class="filters-container">
+      <!-- Matricule Filter -->
       <div class="filter-group">
-        <label for="filterMatricule">Filtrer par Matricule</label>
-        <select id="filterMatricule" onchange="applyFilters()">
-          <option value="">-- Tous les matricules --</option>
-        </select>
+        <label>Filtrer par Matricule</label>
+        <div class="searchable-dropdown" id="matriculeDropdown">
+          <input type="text" class="filter-search-input" placeholder="🔍 Rechercher..." data-filter="matricule" onkeyup="filterDropdownOptions(this)">
+          <div class="dropdown-options">
+            <div class="dropdown-option" data-value="">-- Tous les matricules --</div>
+          </div>
+        </div>
       </div>
 
+      <!-- Fonction Filter -->
       <div class="filter-group">
-        <label for="filterFonction">Filtrer par Fonction</label>
-        <select id="filterFonction" onchange="applyFilters()">
-          <option value="">-- Toutes les fonctions --</option>
-        </select>
+        <label>Filtrer par Fonction</label>
+        <div class="searchable-dropdown" id="fonctionDropdown">
+          <input type="text" class="filter-search-input" placeholder="🔍 Rechercher..." data-filter="fonction" onkeyup="filterDropdownOptions(this)">
+          <div class="dropdown-options">
+            <div class="dropdown-option" data-value="">-- Toutes les fonctions --</div>
+          </div>
+        </div>
       </div>
 
+      <!-- Rattachement Filter -->
       <div class="filter-group">
-        <label for="filterRattachement">Filtrer par Rattachement</label>
-        <select id="filterRattachement" onchange="applyFilters()">
-          <option value="">-- Tous les rattachements --</option>
-        </select>
+        <label>Filtrer par Rattachement</label>
+        <div class="searchable-dropdown" id="rattachementDropdown">
+          <input type="text" class="filter-search-input" placeholder="🔍 Rechercher..." data-filter="rattachement" onkeyup="filterDropdownOptions(this)">
+          <div class="dropdown-options">
+            <div class="dropdown-option" data-value="">-- Tous les rattachements --</div>
+          </div>
+        </div>
       </div>
 
       <button class="btn btn-secondary" onclick="resetFilters()">🔄 Réinitialiser</button>
@@ -77,10 +89,8 @@
             <th>Fonction</th>
             <th>Rattachement</th>
             <th>Login</th>
-            <th>Outil</th>
-            <th>Statut</th>
-            <th>Date Début</th>
-            <th>Date Fin</th>
+            <th>Nb. Outils</th>
+            <th style="text-align: center;">Détails</th>
           </tr>
         </thead>
         <tbody id="tableBody">
@@ -93,6 +103,64 @@
     </div>
 
   </section>
+ </div>
+
+  <!-- MODAL DÉTAILS COLLABORATEUR -->
+  <div id="detailsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>📋 Détails Collaborateur</h2>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="details-grid">
+          <div class="detail-item">
+            <label>Matricule:</label>
+            <div class="detail-value" id="detailMatricule">---</div>
+          </div>
+          <div class="detail-item">
+            <label>Nom:</label>
+            <div class="detail-value" id="detailNom">---</div>
+          </div>
+          <div class="detail-item">
+            <label>Fonction:</label>
+            <div class="detail-value" id="detailFonction">---</div>
+          </div>
+          <div class="detail-item">
+            <label>Rattachement:</label>
+            <div class="detail-value" id="detailRattachement">---</div>
+          </div>
+          <div class="detail-item">
+            <label>Login:</label>
+            <div class="detail-value" id="detailLogin">---</div>
+          </div>
+        </div>
+
+        <div class="tools-section">
+          <h3>🛠️ Outils à créer</h3>
+          <div class="tools-table-container">
+            <table class="tools-table">
+              <thead>
+                <tr>
+                  <th>Outil</th>
+                  <th>Statut</th>
+                  <th>Date Début</th>
+                  <th>Date Fin</th>
+                </tr>
+              </thead>
+              <tbody id="toolsTableBody">
+              </tbody>
+            </table>
+          </div>
+          <div id="emptyTools" style="text-align: center; padding: 20px; color: #999; display: none;">
+            Aucun outil à afficher
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal()">Fermer</button>
+      </div>
+    </div>
   </div>
 
   <script src="script.js"></script>
